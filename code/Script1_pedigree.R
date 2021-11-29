@@ -1,10 +1,10 @@
 #Code for expanding pedigree into pairwise relationships of close relatives
 
-#Motivation: Will produce output file for use in 'closeRelatives'
+#Motivation: Will produce output file for use in Script2_dataframe
 
 #Start date: February 11 2021 by S.Walmsley
 
-#Last modified March 15 2021 by S.Walmsley 
+#Last modified November 22 2021 by S.Walmsley 
 
 #Required packages
 library(plyr)
@@ -19,7 +19,7 @@ library(Matrix)
 #For reproducibility
 set.seed(1234)
 
-## Establish connection to KRSP database =================================
+# Connect to database -----------------------------------
 
 con <- krsp_connect (host = "krsp.cepb5cjvqban.us-east-2.rds.amazonaws.com",
                      dbname ="krsp",
@@ -29,7 +29,8 @@ con <- krsp_connect (host = "krsp.cepb5cjvqban.us-east-2.rds.amazonaws.com",
 source_url("https://raw.githubusercontent.com/KluaneRedSquirrelProject/krsp-functions/master/create_pedigree.R")
 
 
-## Calculate pairwise relatedness matrix =================================
+# Calculate pairwise relatedness matrix -----------------------------------
+
 
 # run pedantics function on pedigree
 krspPedigreeSummary<-pedigreeStats(krsp_pedigree, graphicalReport="n")
@@ -40,20 +41,21 @@ aa <- krspPedigreeSummary$Amatrix# 400 million elements, mostly 0s
 aaSparse <- Matrix(aa,sparse=TRUE)
 
 
-## Expand relatedness matrix into long dyadic dataframe =================================
+# Expand relatedness matrix -----------------------------------------------
 
 # convert pedigree to data table for fast searching 
 dt_krsp_pedigree <- data.table(krsp_pedigree)
 
 #use function for melting sparse matrices (verbose matrix for entire pedigree is too large to melt -- 400 million + elements)
-dt <- data.table(setNames(mefa4::Melt(aaSparse), c('focal', 'target', 'relatedness'))) # this works
+dt <- data.table(setNames(mefa4::Melt(aaSparse), c('focal', 'target', 'relatedness'))) 
 
 #subset to create new data table including only close relatives and excluding self-self comparisons
 relatives <- dt[relatedness>=0.5 & focal!=target,,]
 relatives[,index:=.I,] # add generic index column, useful for next steps
 
 
-## Assign basic genealogical relationships =================================
+# Assign genealogical relationships ---------------------------------------
+
 
 #identify and label parent relationships [this takes a little while ~20 minutes on my machine]
 relatives[,relationship:=ifelse(target %in% dt_krsp_pedigree[id==focal,c(as.character(dam),as.character(sire)),],"parent",NA),by=index] 
