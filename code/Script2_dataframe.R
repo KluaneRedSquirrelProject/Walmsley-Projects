@@ -26,7 +26,7 @@ set.seed(9999)
 
 
 # Include custom function to calculate familiarity
-evaluate(file("./functions/famFunction.R"), keep_message = FALSE)
+evaluate(file("./code/functions/famFunction.R"), keep_message = FALSE)
 
 
 # Connect to database -----------------------------------
@@ -246,7 +246,7 @@ pairedRelations <- pairedRelations[!is.na(relationship),,]
 
 # Calculate female ARS ----------------------------------------------------
 
-evaluate(file("./functions/lifetimeAdapted.r"), keep_message = FALSE) # adapted portion of 'lifetime' to calculate female litter and fitness details
+evaluate(file("./code/functions/lifetimeAdapted.r"), keep_message = FALSE) # adapted portion of 'lifetime' to calculate female litter and fitness details
 
 dfit <- data.table(dam_fit2) # convert to data table for merging 
 
@@ -345,6 +345,7 @@ mastYears[,V1:=NULL,]
 # merge mast year records into squirrel-year dataframe
 
 out <- merge(out, mastYears, by.x="year", by.y="year", all.x=TRUE, allow.cartesian = TRUE)
+
 
 
 
@@ -542,7 +543,7 @@ for (j in 1:nrow(noKin)) { # looping through rows of 'non-kin' individuals
     
     set(noKin,i = j, j = "t_locY", value = neighbours[index,locY,]) # added July 2022 for familiarity calculations
     
-  } else {
+  } else { 
     
     set(noKin,i = j,j = "neighbourDistance", value = NA)
     
@@ -718,5 +719,7 @@ fullAll[targetFamiliarity<0,targetFamiliarity:=0,] # fix any negative familiarit
 
 #write.csv(fullAll,"./output/entireGrid_August2022.csv")
 
+
+# Note that all columns unnecessary for subsequent analysis (Script 3) were removed prior to creation of final dataset
 
 
